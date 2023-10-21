@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
-
+from interface import Interface
 
 class Facial_Recognition_System:
     def __init__(self, root):
@@ -16,8 +16,17 @@ class Facial_Recognition_System:
         main_img = Label(self.root, image=self.photoimg1)
         main_img.place(x=0, y=0, width=1550, height=800)
 
-        click_lbl = Button(main_img, text="Click Here", font=("sans serif", 35, "bold"), bg="dark blue", fg="white", cursor="hand2")
+        click_lbl = Button(main_img, text="Click Here",command=self.interface_page, font=("sans serif", 35, "bold"), bg="royal blue", fg="white", cursor="hand2")
         click_lbl.place(x=1000, y=700, width=250, height=50)
+
+
+
+    def interface_page(self):
+        self.new_window=Toplevel(self.root)
+        self.app=Interface(self.new_window)
+
+
+
 
 
 
