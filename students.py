@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
 from tkinter import messagebox
+import mysql.connector
 
 
 class Students:
@@ -284,13 +285,16 @@ class Students:
         )
         student_gender_label.grid(row=2, column=0, padx=10, pady=5, sticky=W)
 
-        student_gender_entry = ttk.Entry(
+        select_combo = ttk.Combobox(
             student_info_frame,
             textvariable=self.var_gender,
-            width=20,
             font=("sans serif", 12),
+            state="readonly",
+            width=18,
         )
-        student_gender_entry.grid(row=2, column=1, padx=10, pady=5, sticky=W)
+        select_combo["values"] = ("Male", "Female")
+        select_combo.current(0)
+        select_combo.grid(row=2, column=1, padx=10, pady=5, sticky=W)
 
         # DOB
 
@@ -384,19 +388,18 @@ class Students:
 
         # Radio Buttons
 
-        self.var_radio1 = StringVar()
+        self.var_radio = StringVar()
         radio_btn1 = ttk.Radiobutton(
             student_info_frame,
-            textvariable=self.var_radio1,
+            variable=self.var_radio,
             text="Take Photo Sample",
             value="Yes",
         )
         radio_btn1.grid(row=6, column=0)
 
-        self.var_radio2 = StringVar()
         radio_btn2 = ttk.Radiobutton(
             student_info_frame,
-            textvariable=self.var_radio2,
+            variable=self.var_radio,
             text="No Photo Sample",
             value="No",
         )
@@ -599,6 +602,10 @@ class Students:
         self.student_table.column("Photo", width=200)
 
         self.student_table.pack(fill=BOTH, expand=1)
+        self.student_table.bind("<ButtonRelease>", self.get_cursor)
+        self.fetch_data()
+
+    # functionality
 
     def add_data(self):
         if (
@@ -608,7 +615,103 @@ class Students:
         ):
             messagebox.showerror("Error", "All fields are required", parent=self.root)
         else:
-            pass
+            try:
+                conn = mysql.connector.connect(
+                    host="localhost",
+                    username="root",
+                    password="december/4/2005",
+                    database="face_recognition_system",
+                )
+                my_cursor = conn.cursor()
+                my_cursor.execute(
+                    "insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (
+                        self.var_department.get(),
+                        self.var_course.get(),
+                        self.var_year.get(),
+                        self.var_semester.get(),
+                        self.var_id.get(),
+                        self.var_name.get(),
+                        self.var_section.get(),
+                        self.var_roll.get(),
+                        self.var_gender.get(),
+                        self.var_dob.get(),
+                        self.var_email.get(),
+                        self.var_phone.get(),
+                        self.var_address.get(),
+                        self.var_teacher.get(),
+                        self.var_radio.get(),
+                    ),
+                )
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+                messagebox.showinfo(
+                    "Success",
+                    "Student Data has been added successfully",
+                    parent=self.root,
+                )
+            except Exception as es:
+                messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
+
+    def fetch_data(self):
+        conn = mysql.connector.connect(
+            host="localhost",
+            username="root",
+            password="december/4/2005",
+            database="face_recognition_system",
+        )
+        my_cursor = conn.cursor()
+        my_cursor.execute("select * from student")
+        data = my_cursor.fetchall()
+
+        if len(data) != 0:
+            self.student_table.delete(*self.student_table.get_children())
+            for i in data:
+                self.student_table.insert("", END, values=i)
+                conn.commit()
+            conn.close()
+
+    def get_cursor(self, event=""):
+        cursor_focus = self.student_table.focus()
+        content = self.student_table.item(cursor_focus)
+        data = content["values"]
+
+        self.var_department.set(data[0])
+        self.var_course.set(data[1])
+        self.var_year.set(data[2])
+        self.var_semester.set(data[3])
+        self.var_id.set(data[4])
+        self.var_name.set(data[5])
+        self.var_section.set(data[6])
+        self.var_roll.set(data[7])
+        self.var_gender.set(data[8])
+        self.var_dob.set(data[9])
+        self.var_email.set(data[10])
+        self.var_phone.set(data[11])
+        self.var_address.set(data[12])
+        self.var_teacher.set(data[13])
+        self.var_radio.set(data[14])
+
+    # def update_data(self):
+    #     if (
+    #         self.var_department.get() == "Select Department"
+    #         or self.var_name.get() == ""
+    #         or self.var_id.get() == ""
+    #     ):
+    #         messagebox.showerror("Error", "All fields are required", parent=self.root)
+    #     else:
+    #         try:
+    #             update = messagebox.askyesno("Update","Do you want to update the data",parent=self.root)
+    #             if update>0:
+    #                 conn = mysql.connector.connect(
+    #         host="localhost",
+    #         username="root",
+    #         password="december/4/2005",
+    #         database="face_recognition_system",
+    #     )
+    # my_cursor = conn.cursor()
+    # my_cursor.execute("update student set Department=%s,Course=%s,Year=%s,Semester=%s,Student_Id=%s,Name=%s,Section=%s,Roll=%s,Gender=%s")
 
 
 if __name__ == "__main__":
