@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
 from students import Students
+from train_data import Train_Data
 import os
 
 
@@ -87,12 +88,18 @@ class Interface:
         img5 = img5.resize((220, 220), Image.Resampling.LANCZOS)
         self.photoimg5 = ImageTk.PhotoImage(img5)
 
-        training_data_button = Button(bg_img, image=self.photoimg5, cursor="hand2")
+        training_data_button = Button(
+            bg_img,
+            image=self.photoimg5,
+            cursor="hand2",
+            command=self.data_training_page,
+        )
         training_data_button.place(x=70, y=420, width=220, height=220)
 
         training_data_button_1 = Button(
             bg_img,
             text="Data Training",
+            command=self.data_training_page,
             cursor="hand2",
             font=("sans serif", 15, "bold"),
             bg="royal blue",
@@ -145,6 +152,10 @@ class Interface:
 
     def picture_page(self):
         os.startfile("data")
+
+    def data_training_page(self):
+        self.new_window = Toplevel(self.root)
+        self.app = Train_Data(self.new_window)
 
 
 if __name__ == "__main__":
