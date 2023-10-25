@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from tkinter import messagebox
 import mysql.connector
+import cv2
 
 
 class Students:
@@ -28,9 +29,7 @@ class Students:
         self.var_address = StringVar()
         self.var_teacher = StringVar()
 
-        img1 = Image.open(
-            r"C:\Users\SaadAliKhan\Desktop\facial_recognition_system\Img\OMB-AI-Blog-Image_06.08.23-scaled.jpg"
-        )
+        img1 = Image.open(r"Img\OMB-AI-Blog-Image_06.08.23-scaled.jpg")
         img1 = img1.resize((1920, 1080), Image.Resampling.LANCZOS)
         self.photoimg1 = ImageTk.PhotoImage(img1)
 
@@ -59,9 +58,7 @@ class Students:
         )
         left_frame.place(x=20, y=10, width=730, height=700)
 
-        img_left = Image.open(
-            r"C:\Users\SaadAliKhan\Desktop\facial_recognition_system\Img\nedpic.jpg"
-        )
+        img_left = Image.open(r"Img\nedpic.jpg")
         img_left = img_left.resize((800, 205), Image.Resampling.LANCZOS)
         self.photoimg_left = ImageTk.PhotoImage(img_left)
 
@@ -423,6 +420,7 @@ class Students:
 
         update_btn = Button(
             btn_frame_1,
+            command=self.update_data,
             text="Update",
             width=16,
             font=("sans serif", 13, "bold"),
@@ -433,6 +431,7 @@ class Students:
 
         delete_btn = Button(
             btn_frame_1,
+            command=self.delete_data,
             text="Delete",
             width=16,
             font=("sans serif", 13, "bold"),
@@ -443,6 +442,7 @@ class Students:
 
         reset_btn = Button(
             btn_frame_1,
+            command=self.reset_data,
             text="Reset",
             width=17,
             font=("sans serif", 13, "bold"),
@@ -456,6 +456,7 @@ class Students:
 
         take_photo_btn = Button(
             btn_frame_2,
+            command=self.generate_dataset,
             text="Take Photo Sample",
             width=34,
             font=("sans serif", 13, "bold"),
@@ -693,25 +694,204 @@ class Students:
         self.var_teacher.set(data[13])
         self.var_radio.set(data[14])
 
-    # def update_data(self):
-    #     if (
-    #         self.var_department.get() == "Select Department"
-    #         or self.var_name.get() == ""
-    #         or self.var_id.get() == ""
-    #     ):
-    #         messagebox.showerror("Error", "All fields are required", parent=self.root)
-    #     else:
-    #         try:
-    #             update = messagebox.askyesno("Update","Do you want to update the data",parent=self.root)
-    #             if update>0:
-    #                 conn = mysql.connector.connect(
-    #         host="localhost",
-    #         username="root",
-    #         password="december/4/2005",
-    #         database="face_recognition_system",
-    #     )
-    # my_cursor = conn.cursor()
-    # my_cursor.execute("update student set Department=%s,Course=%s,Year=%s,Semester=%s,Student_Id=%s,Name=%s,Section=%s,Roll=%s,Gender=%s")
+    def update_data(self):
+        if (
+            self.var_department.get() == "Select Department"
+            or self.var_name.get() == ""
+            or self.var_id.get() == ""
+        ):
+            messagebox.showerror("Error", "All fields are required", parent=self.root)
+        else:
+            try:
+                update = messagebox.askyesno(
+                    "Update", "Do you want to update the data", parent=self.root
+                )
+                if update > 0:
+                    conn = mysql.connector.connect(
+                        host="localhost",
+                        username="root",
+                        password="december/4/2005",
+                        database="face_recognition_system",
+                    )
+                    my_cursor = conn.cursor()
+                    my_cursor.execute(
+                        "UPDATE student SET `Department`=%s,`Course`=%s,`Year`=%s,`Semester`=%s,`Name`=%s,`Section`=%s,`Roll`=%s,`Gender`=%s,`DOB`=%s,`Email`=%s,`Phone`=%s,`Address`=%s,`Teacher`=%s,`Photo Sample`=%s where `Student_Id`=%s",
+                        (
+                            self.var_department.get(),
+                            self.var_course.get(),
+                            self.var_year.get(),
+                            self.var_semester.get(),
+                            self.var_name.get(),
+                            self.var_section.get(),
+                            self.var_roll.get(),
+                            self.var_gender.get(),
+                            self.var_dob.get(),
+                            self.var_email.get(),
+                            self.var_phone.get(),
+                            self.var_address.get(),
+                            self.var_teacher.get(),
+                            self.var_radio.get(),
+                            self.var_id.get(),
+                        ),
+                    )
+                else:
+                    if not update:
+                        return
+                messagebox.showinfo(
+                    "Success", "Student data is updated successfully", parent=self.root
+                )
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+            except Exception as es:
+                messagebox.showerror("Error", f"Due to:{str(es)}", parent=self.root)
+
+    def delete_data(self):
+        if self.var_id.get() == "":
+            messagebox.showerror("Error", "Student Id is required", parent=self.root)
+        else:
+            try:
+                delete = messagebox.askyesno(
+                    "Delete",
+                    "Do you want to delete the student data?",
+                    parent=self.root,
+                )
+                if delete > 0:
+                    conn = mysql.connector.connect(
+                        host="localhost",
+                        username="root",
+                        password="december/4/2005",
+                        database="face_recognition_system",
+                    )
+                    my_cursor = conn.cursor()
+                    sql = "delete from student where Student_Id=%s"
+                    value = (self.var_id.get(),)
+                    my_cursor.execute(sql, value)
+                else:
+                    return
+
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+                messagebox.showinfo("Delete", "Successfully deleted student details")
+
+            except Exception as es:
+                messagebox.showerror(
+                    "Error", "Student Id is required", parent=self.root
+                )
+
+    def reset_data(self):
+        self.var_department.set("Select Department")
+        self.var_course.set("Select Course")
+        self.var_year.set("Select Year")
+        self.var_semester.set("Select Semester")
+        self.var_id.set("")
+        self.var_name.set("")
+        self.var_section.set("")
+        self.var_roll.set("")
+        self.var_gender.set("Male")
+        self.var_dob.set("")
+        self.var_email.set("")
+        self.var_phone.set("")
+        self.var_address.set("")
+        self.var_teacher.set("")
+        self.var_radio.set("")
+
+    # Generate data set or take photo samples
+
+    def generate_dataset(self):
+        if (
+            self.var_department.get() == "Select Department"
+            or self.var_name.get() == ""
+            or self.var_id.get() == ""
+        ):
+            messagebox.showerror("Error", "All fields are required", parent=self.root)
+        else:
+            try:
+                conn = mysql.connector.connect(
+                    host="localhost",
+                    username="root",
+                    password="december/4/2005",
+                    database="face_recognition_system",
+                )
+                my_cursor = conn.cursor()
+                my_cursor.execute("select * from student")
+                my_result = my_cursor.fetchall()
+
+                id = 0
+                for x in my_result:
+                    id += 1
+                my_cursor.execute(
+                    "UPDATE student SET `Department`=%s,`Course`=%s,`Year`=%s,`Semester`=%s,`Name`=%s,`Section`=%s,`Roll`=%s,`Gender`=%s,`DOB`=%s,`Email`=%s,`Phone`=%s,`Address`=%s,`Teacher`=%s,`Photo Sample`=%s where `Student_Id`=%s",
+                    (
+                        self.var_department.get(),
+                        self.var_course.get(),
+                        self.var_year.get(),
+                        self.var_semester.get(),
+                        self.var_name.get(),
+                        self.var_section.get(),
+                        self.var_roll.get(),
+                        self.var_gender.get(),
+                        self.var_dob.get(),
+                        self.var_email.get(),
+                        self.var_phone.get(),
+                        self.var_address.get(),
+                        self.var_teacher.get(),
+                        self.var_radio.get(),
+                        self.var_id.get() == id + 1,
+                    ),
+                )
+
+                conn.commit()
+                self.fetch_data()
+                self.reset_data()
+                conn.close()
+
+                # lOAD predefined data from on face frontals from open cv
+
+                face_classifier = cv2.CascadeClassifier(
+                    "haarcascade_frontalface_default.xml"
+                )
+
+                def face_cropped(img):
+                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    faces = face_classifier.detectMultiScale(gray, 1.3, 5)
+                    # Scaling factor = 1.3
+                    # minimum neighbour = 5
+                    for x, y, w, h in faces:
+                        face_cropped = img[y : y + h, x : x + w]
+                        return face_cropped
+
+                capture = cv2.VideoCapture(0)
+                img_id = 0
+                while True:
+                    ret, my_frame = capture.read()
+                    if face_cropped(my_frame) is not None:
+                        img_id += 1
+                        face = cv2.resize(face_cropped(my_frame), (450, 450))
+                        face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+                        file_name_path = (
+                            "data/user." + str(id) + "." + str(img_id) + ".jpg"
+                        )
+                        cv2.imwrite(file_name_path, face)
+                        cv2.putText(
+                            face,
+                            str(img_id),
+                            (50, 50),
+                            cv2.FONT_HERSHEY_COMPLEX,
+                            2,
+                            (0, 255, 0),
+                            2,
+                        )
+                        cv2.imshow("Croped Face", face)
+                    if cv2.waitKey(1) == 13 or int(img_id) == 100:
+                        break
+                capture.release()
+                cv2.destroyAllWindows()
+                messagebox.showinfo("Result", "Generation of data set completed")
+
+            except Exception as es:
+                messagebox.showerror("Error", f"Due to {str(es)}", parent=self.root)
 
 
 if __name__ == "__main__":
