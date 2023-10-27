@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 from students import Students
 from train_data import Train_Data
 from face_recognition import Face_Recognition
+from tkinter import messagebox
 import os
 
 
@@ -78,12 +79,15 @@ class Interface:
         img4 = img4.resize((220, 220), Image.Resampling.LANCZOS)
         self.photoimg4 = ImageTk.PhotoImage(img4)
 
-        attendance_button = Button(bg_img, image=self.photoimg4, cursor="hand2")
+        attendance_button = Button(
+            bg_img, image=self.photoimg4, cursor="hand2", command=self.attendance_page
+        )
         attendance_button.place(x=630, y=120, width=220, height=220)
 
         attendance_button_1 = Button(
             bg_img,
             text="Attendance",
+            command=self.attendance_page,
             cursor="hand2",
             font=("sans serif", 15, "bold"),
             bg="royal blue",
@@ -140,12 +144,15 @@ class Interface:
         img7 = img7.resize((220, 220), Image.Resampling.LANCZOS)
         self.photoimg7 = ImageTk.PhotoImage(img7)
 
-        exit_button = Button(bg_img, image=self.photoimg7, cursor="hand2")
+        exit_button = Button(
+            bg_img, image=self.photoimg7, cursor="hand2", command=self.exit
+        )
         exit_button.place(x=630, y=420, width=220, height=220)
 
         exit_button_1 = Button(
             bg_img,
             text="Exit",
+            command=self.exit,
             cursor="hand2",
             font=("sans serif", 15, "bold"),
             bg="royal blue",
@@ -160,6 +167,9 @@ class Interface:
     def picture_page(self):
         os.startfile("data")
 
+    def attendance_page(self):
+        os.startfile("attendance.csv")
+
     def data_training_page(self):
         self.new_window = Toplevel(self.root)
         self.app = Train_Data(self.new_window)
@@ -167,6 +177,13 @@ class Interface:
     def face_recognition_page(self):
         self.new_window = Toplevel(self.root)
         self.app = Face_Recognition(self.new_window)
+
+    def exit(self):
+        self.exit = messagebox.askyesno("Exit", "Do you want to exit", parent=self.root)
+        if self.exit > 0:
+            self.root.destroy()
+        else:
+            return
 
 
 if __name__ == "__main__":
