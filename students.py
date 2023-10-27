@@ -888,7 +888,9 @@ class Students:
                         break
                 capture.release()
                 cv2.destroyAllWindows()
-                messagebox.showinfo("Result", "Generation of data set completed")
+                messagebox.showinfo(
+                    "Result", "Generation of data set completed", parent=self.root
+                )
 
             except Exception as es:
                 messagebox.showerror("Error", f"Due to {str(es)}", parent=self.root)

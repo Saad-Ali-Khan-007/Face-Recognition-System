@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from students import Students
 from train_data import Train_Data
+from face_recognition import Face_Recognition
 import os
 
 
@@ -54,11 +55,17 @@ class Interface:
         img3 = img3.resize((220, 220), Image.Resampling.LANCZOS)
         self.photoimg3 = ImageTk.PhotoImage(img3)
 
-        facial_recognition_button = Button(bg_img, image=self.photoimg3, cursor="hand2")
+        facial_recognition_button = Button(
+            bg_img,
+            image=self.photoimg3,
+            cursor="hand2",
+            command=self.face_recognition_page,
+        )
         facial_recognition_button.place(x=350, y=120, width=220, height=220)
 
         facial_recognition_button_1 = Button(
             bg_img,
+            command=self.face_recognition_page,
             text="Face Recognition",
             cursor="hand2",
             font=("sans serif", 15, "bold"),
@@ -156,6 +163,10 @@ class Interface:
     def data_training_page(self):
         self.new_window = Toplevel(self.root)
         self.app = Train_Data(self.new_window)
+
+    def face_recognition_page(self):
+        self.new_window = Toplevel(self.root)
+        self.app = Face_Recognition(self.new_window)
 
 
 if __name__ == "__main__":
